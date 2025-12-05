@@ -104,6 +104,39 @@ const generateCat = (): CatCard => {
   };
 };
 
+const playSoundEffect = (rarity: Rarity) => {
+  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  const rarityFrequencies: Record<Rarity, number[]> = {
+    common: [400, 500],
+    uncommon: [500, 600, 700],
+    rare: [600, 750, 900],
+    epic: [700, 850, 1000, 1200],
+    mythic: [800, 1000, 1200, 1400],
+    legendary: [900, 1100, 1300, 1500, 1700],
+    secret: [1000, 1200, 1400, 1600, 1800, 2000],
+  };
+  
+  const frequencies = rarityFrequencies[rarity];
+  let currentTime = audioContext.currentTime;
+  
+  frequencies.forEach((freq, index) => {
+    oscillator.frequency.setValueAtTime(freq, currentTime);
+    gainNode.gain.setValueAtTime(0.1, currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.15);
+    currentTime += 0.1;
+  });
+  
+  oscillator.type = rarity === 'legendary' || rarity === 'secret' ? 'sine' : 'triangle';
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(currentTime);
+};
+
 const Index = () => {
   const [inventory, setInventory] = useState<CatCard[]>([]);
   const [balance, setBalance] = useState(0);
@@ -155,6 +188,8 @@ const Index = () => {
       setCurrentCard(newCat);
       setInventory(prev => [...prev, newCat]);
       setBalance(prev => prev + newCat.points);
+      
+      playSoundEffect(newCat.rarity);
       
       const rarityLabel = rarityConfig[newCat.rarity].label;
       toast.success(`Получен ${rarityLabel} котик! +${newCat.points} очков`, {
