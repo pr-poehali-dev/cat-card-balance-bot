@@ -138,13 +138,20 @@ const playSoundEffect = (rarity: Rarity) => {
 };
 
 const Index = () => {
-  const [inventory, setInventory] = useState<CatCard[]>([]);
-  const [balance, setBalance] = useState(0);
+  const [inventory, setInventory] = useState<CatCard[]>(() => {
+    const saved = localStorage.getItem('inventory');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [balance, setBalance] = useState(() => {
+    const saved = localStorage.getItem('balance');
+    return saved ? parseInt(saved) : 0;
+  });
   const [currentCard, setCurrentCard] = useState<CatCard | null>(null);
   const [isRevealing, setIsRevealing] = useState(false);
   const [selectedTab, setSelectedTab] = useState('home');
   const [cooldownEnd, setCooldownEnd] = useState<number>(0);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [telegramUser, setTelegramUser] = useState<any>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('cooldownEnd');
@@ -154,7 +161,35 @@ const Index = () => {
         setCooldownEnd(endTime);
       }
     }
+
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg && tg.initDataUnsafe?.user) {
+      setTelegramUser(tg.initDataUnsafe.user);
+      const userId = tg.initDataUnsafe.user.id;
+      
+      const savedInventory = localStorage.getItem(`inventory_${userId}`);
+      const savedBalance = localStorage.getItem(`balance_${userId}`);
+      
+      if (savedInventory) setInventory(JSON.parse(savedInventory));
+      if (savedBalance) setBalance(parseInt(savedBalance));
+    }
   }, []);
+
+  useEffect(() => {
+    if (telegramUser) {
+      localStorage.setItem(`inventory_${telegramUser.id}`, JSON.stringify(inventory));
+    } else {
+      localStorage.setItem('inventory', JSON.stringify(inventory));
+    }
+  }, [inventory, telegramUser]);
+
+  useEffect(() => {
+    if (telegramUser) {
+      localStorage.setItem(`balance_${telegramUser.id}`, balance.toString());
+    } else {
+      localStorage.setItem('balance', balance.toString());
+    }
+  }, [balance, telegramUser]);
 
   useEffect(() => {
     if (cooldownEnd <= Date.now()) {
@@ -438,10 +473,20 @@ const Index = () => {
             <Card className="p-8 bg-card/50 backdrop-blur">
               <div className="text-center mb-8">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary mx-auto mb-4 flex items-center justify-center">
-                  <Icon name="User" size={48} className="text-white" />
+                  {telegramUser?.photo_url ? (
+                    <img src={telegramUser.photo_url} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <Icon name="User" size={48} className="text-white" />
+                  )}
                 </div>
-                <h2 className="text-3xl font-bold mb-2">Игрок</h2>
-                <Badge className="text-sm">Коллекционер</Badge>
+                <h2 className="text-3xl font-bold mb-2">
+                  {telegramUser ? `${telegramUser.first_name} ${telegramUser.last_name || ''}`.trim() : 'Игрок'}
+                </h2>
+                {telegramUser ? (
+                  <Badge className="text-sm bg-primary">Telegram User</Badge>
+                ) : (
+                  <Badge className="text-sm">Гость</Badge>
+                )}
               </div>
 
               <div className="grid gap-4">
