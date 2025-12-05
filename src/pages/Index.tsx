@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -65,8 +65,44 @@ const Index = () => {
   const [currentCard, setCurrentCard] = useState<CatCard | null>(null);
   const [isRevealing, setIsRevealing] = useState(false);
   const [selectedTab, setSelectedTab] = useState('home');
+  const [cooldownEnd, setCooldownEnd] = useState<number>(0);
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('cooldownEnd');
+    if (stored) {
+      const endTime = parseInt(stored);
+      if (endTime > Date.now()) {
+        setCooldownEnd(endTime);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (cooldownEnd <= Date.now()) {
+      setTimeLeft(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const left = Math.max(0, cooldownEnd - Date.now());
+      setTimeLeft(left);
+      if (left === 0) {
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [cooldownEnd]);
 
   const handleGetCard = () => {
+    if (timeLeft > 0) {
+      toast.error('Слишком рано!', {
+        description: `Подожди ещё ${formatTime(timeLeft)}`
+      });
+      return;
+    }
+
     setIsRevealing(true);
     const newCat = generateCat();
     
@@ -80,8 +116,18 @@ const Index = () => {
         description: `${newCat.emoji} ${newCat.name}`,
       });
       
+      const endTime = Date.now() + 2 * 60 * 1000;
+      setCooldownEnd(endTime);
+      localStorage.setItem('cooldownEnd', endTime.toString());
+      
       setIsRevealing(false);
     }, 1000);
+  };
+
+  const formatTime = (ms: number): string => {
+    const seconds = Math.floor((ms / 1000) % 60);
+    const minutes = Math.floor(ms / 1000 / 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const totalCards = inventory.length;
@@ -159,13 +205,18 @@ const Index = () => {
                 
                 <Button 
                   onClick={handleGetCard} 
-                  disabled={isRevealing}
-                  className="w-full h-16 text-xl font-bold bg-gradient-to-r from-primary via-secondary to-accent hover:opacity-90 transition-all"
+                  disabled={isRevealing || timeLeft > 0}
+                  className="w-full h-16 text-xl font-bold bg-gradient-to-r from-primary via-secondary to-accent hover:opacity-90 transition-all disabled:opacity-50"
                 >
                   {isRevealing ? (
                     <>
                       <Icon name="Loader2" size={24} className="mr-2 animate-spin" />
                       Открываем...
+                    </>
+                  ) : timeLeft > 0 ? (
+                    <>
+                      <Icon name="Timer" size={24} className="mr-2" />
+                      {formatTime(timeLeft)}
                     </>
                   ) : (
                     <>
@@ -336,6 +387,31 @@ const Index = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <footer className="mt-12 pb-8 text-center space-y-3">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <Icon name="Code" size={18} />
+            <span>Создано автором</span>
+            <a 
+              href="https://t.me/mrlaifon" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="font-bold text-primary hover:text-secondary transition-colors flex items-center gap-1"
+            >
+              Mrlaifon
+              <Icon name="ExternalLink" size={16} />
+            </a>
+          </div>
+          <a 
+            href="https://t.me/mrlaifon" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/20 to-secondary/20 hover:from-primary/30 hover:to-secondary/30 rounded-full transition-all border border-primary/30"
+          >
+            <Icon name="Send" size={20} />
+            <span className="font-semibold">Подписаться на Telegram</span>
+          </a>
+        </footer>
       </div>
     </div>
   );
