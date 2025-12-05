@@ -7,20 +7,15 @@
       "expectedStatus": 200
     },
     {
-      "name": "Test webhook with start command",
-      "method": "POST",
-      "path": "/",
-      "body": {
-        "message": {
-          "chat": {
-            "id": 123456789
-          },
-          "text": "/start"
-        }
-      },
+      "name": "Test stats endpoint",
+      "method": "GET",
+      "path": "/?stats=true",
       "expectedStatus": 200,
       "expectedBody": {
-        "ok": true
+        "totalUsers": 0,
+        "totalCards": 0,
+        "totalPoints": 0,
+        "recentActivity": []
       },
       "bodyMatcher": "partial"
     }
