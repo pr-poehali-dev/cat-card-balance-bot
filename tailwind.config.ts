@@ -6,7 +6,7 @@ export default {
 		"./pages/**/*.{ts,tsx}",
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
-		"./src/**/*.{ts,tsx}",
+		"./src/**/*.{ts,tsx}"
 	],
 	prefix: "",
 	theme: {
@@ -61,6 +61,15 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				rare: {
+					common: 'hsl(var(--rare-common))',
+					uncommon: 'hsl(var(--rare-uncommon))',
+					rare: 'hsl(var(--rare-rare))',
+					epic: 'hsl(var(--rare-epic))',
+					mythic: 'hsl(var(--rare-mythic))',
+					legendary: 'hsl(var(--rare-legendary))',
+					secret: 'hsl(var(--rare-secret))'
 				}
 			},
 			borderRadius: {
@@ -84,11 +93,31 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					'0%': { opacity: '0', transform: 'translateY(20px) scale(0.95)' },
+					'100%': { opacity: '1', transform: 'translateY(0) scale(1)' }
+				},
+				'card-flip': {
+					'0%': { transform: 'rotateY(0deg)' },
+					'100%': { transform: 'rotateY(180deg)' }
+				},
+				'shine': {
+					'0%': { backgroundPosition: '200%' },
+					'100%': { backgroundPosition: '-200%' }
+				},
+				'pulse-glow': {
+					'0%, 100%': { boxShadow: '0 0 20px currentColor' },
+					'50%': { boxShadow: '0 0 40px currentColor' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.5s ease-out',
+				'card-flip': 'card-flip 0.6s ease-in-out',
+				'shine': 'shine 2s linear infinite',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
 			}
 		}
 	},
