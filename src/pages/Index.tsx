@@ -14,16 +14,59 @@ interface CatCard {
   rarity: Rarity;
   points: number;
   emoji: string;
+  image: string;
 }
 
-const rarityConfig: Record<Rarity, { label: string; color: string; chance: number; pointsRange: [number, number] }> = {
-  common: { label: 'Обычный', color: 'text-rare-common', chance: 40, pointsRange: [10, 30] },
-  uncommon: { label: 'Необычный', color: 'text-rare-uncommon', chance: 30, pointsRange: [40, 70] },
-  rare: { label: 'Редкий', color: 'text-rare-rare', chance: 15, pointsRange: [80, 120] },
-  epic: { label: 'Эпический', color: 'text-rare-epic', chance: 8, pointsRange: [150, 250] },
-  mythic: { label: 'Мифический', color: 'text-rare-mythic', chance: 4, pointsRange: [300, 500] },
-  legendary: { label: 'Легендарный', color: 'text-rare-legendary', chance: 2, pointsRange: [600, 1000] },
-  secret: { label: 'Секретный', color: 'text-rare-secret', chance: 1, pointsRange: [1500, 3000] },
+const rarityConfig: Record<Rarity, { label: string; color: string; chance: number; pointsRange: [number, number]; images: string[] }> = {
+  common: { 
+    label: 'Обычный', 
+    color: 'text-rare-common', 
+    chance: 40, 
+    pointsRange: [10, 30],
+    images: ['https://cdn.poehali.dev/projects/467e657b-554e-4ad5-86e8-362c65a84e76/files/6d3c8410-cb7b-4a36-8b43-45e379fe7cf4.jpg']
+  },
+  uncommon: { 
+    label: 'Необычный', 
+    color: 'text-rare-uncommon', 
+    chance: 30, 
+    pointsRange: [40, 70],
+    images: ['https://cdn.poehali.dev/projects/467e657b-554e-4ad5-86e8-362c65a84e76/files/9ca14f8a-45a7-49dc-aaa1-80cb48029344.jpg']
+  },
+  rare: { 
+    label: 'Редкий', 
+    color: 'text-rare-rare', 
+    chance: 15, 
+    pointsRange: [80, 120],
+    images: ['https://cdn.poehali.dev/projects/467e657b-554e-4ad5-86e8-362c65a84e76/files/2922e124-148e-4270-9800-b9fd96eb4697.jpg']
+  },
+  epic: { 
+    label: 'Эпический', 
+    color: 'text-rare-epic', 
+    chance: 8, 
+    pointsRange: [150, 250],
+    images: ['https://cdn.poehali.dev/projects/467e657b-554e-4ad5-86e8-362c65a84e76/files/3055f229-3e7b-439c-8617-8c04d5234088.jpg']
+  },
+  mythic: { 
+    label: 'Мифический', 
+    color: 'text-rare-mythic', 
+    chance: 4, 
+    pointsRange: [300, 500],
+    images: ['https://cdn.poehali.dev/projects/467e657b-554e-4ad5-86e8-362c65a84e76/files/7929b3de-ad48-4bb4-ada3-cd8a488cd24f.jpg']
+  },
+  legendary: { 
+    label: 'Легендарный', 
+    color: 'text-rare-legendary', 
+    chance: 2, 
+    pointsRange: [600, 1000],
+    images: ['https://cdn.poehali.dev/projects/467e657b-554e-4ad5-86e8-362c65a84e76/files/e6adc18c-4276-4b06-9c6a-d055dade6a40.jpg']
+  },
+  secret: { 
+    label: 'Секретный', 
+    color: 'text-rare-secret', 
+    chance: 1, 
+    pointsRange: [1500, 3000],
+    images: ['https://cdn.poehali.dev/projects/467e657b-554e-4ad5-86e8-362c65a84e76/files/2997c914-ddac-4315-8e6b-22fb399142d5.jpg']
+  },
 };
 
 const catEmojis = ['😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾', '🐱', '🐈', '🐈‍⬛'];
@@ -49,6 +92,7 @@ const generateCat = (): CatCard => {
 
   const config = rarityConfig[selectedRarity];
   const points = Math.floor(Math.random() * (config.pointsRange[1] - config.pointsRange[0] + 1)) + config.pointsRange[0];
+  const image = config.images[Math.floor(Math.random() * config.images.length)];
 
   return {
     id: Date.now().toString() + Math.random(),
@@ -56,6 +100,7 @@ const generateCat = (): CatCard => {
     rarity: selectedRarity,
     points,
     emoji: catEmojis[Math.floor(Math.random() * catEmojis.length)],
+    image,
   };
 };
 
@@ -185,15 +230,21 @@ const Index = () => {
                   {isRevealing ? (
                     <div className="text-8xl animate-pulse-glow">❓</div>
                   ) : currentCard ? (
-                    <div className="text-center animate-fade-in">
-                      <div className="text-9xl mb-4">{currentCard.emoji}</div>
-                      <h3 className={`text-3xl font-bold mb-2 ${rarityConfig[currentCard.rarity].color} text-glow`}>
-                        {currentCard.name}
-                      </h3>
-                      <Badge className={`text-lg px-4 py-1 ${rarityConfig[currentCard.rarity].color} card-glow`}>
-                        {rarityConfig[currentCard.rarity].label}
-                      </Badge>
-                      <p className="text-4xl font-bold mt-4 text-primary">+{currentCard.points}</p>
+                    <div className="w-full h-full animate-fade-in relative">
+                      <img 
+                        src={currentCard.image} 
+                        alt={currentCard.name}
+                        className="w-full h-full object-cover rounded-2xl"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col items-center justify-end pb-6 rounded-2xl">
+                        <h3 className={`text-3xl font-bold mb-2 ${rarityConfig[currentCard.rarity].color} text-glow`}>
+                          {currentCard.name}
+                        </h3>
+                        <Badge className={`text-lg px-4 py-1 ${rarityConfig[currentCard.rarity].color} card-glow mb-2`}>
+                          {rarityConfig[currentCard.rarity].label}
+                        </Badge>
+                        <p className="text-4xl font-bold text-primary">+{currentCard.points}</p>
+                      </div>
                     </div>
                   ) : (
                     <div className="text-center text-muted-foreground">
@@ -284,10 +335,16 @@ const Index = () => {
                       {inventory
                         .filter(card => card.rarity === rarity)
                         .map(card => (
-                          <div key={card.id} className="aspect-square rounded-lg bg-background/50 flex flex-col items-center justify-center p-2 hover:scale-105 transition-transform">
-                            <div className="text-4xl mb-1">{card.emoji}</div>
-                            <p className="text-xs font-medium truncate w-full text-center">{card.name}</p>
-                            <p className={`text-xs font-bold ${config.color}`}>{card.points}</p>
+                          <div key={card.id} className="aspect-square rounded-lg bg-background/50 overflow-hidden hover:scale-105 transition-transform relative group">
+                            <img 
+                              src={card.image} 
+                              alt={card.name}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-end p-2">
+                              <p className="text-xs font-medium text-white text-center">{card.name}</p>
+                              <p className={`text-xs font-bold ${config.color}`}>{card.points}</p>
+                            </div>
                           </div>
                         ))}
                     </div>
